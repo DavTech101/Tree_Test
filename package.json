@@ -1,0 +1,11 @@
+{
+  "name": "abn_test",
+  "version": "1.0.0",
+  "description": "Take Home Test of Web developer - Data Domain of ABN",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "DavTech",
+  "license": "MIT"
+}
