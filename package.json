@@ -1,20 +1,22 @@
 {
-  "name": "abn_test",
-  "version": "1.0.0",
-  "description": "Take Home Test of Web developer - Data Domain of ABN",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "server": "node api/server"
-  },
-  "author": "DavTech",
-  "license": "MIT",
-  "dependencies": {
-    "colors": "^1.4.0",
-    "concurrently": "^6.4.0",
-    "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "morgan": "^1.10.0"
-  }
+    "name": "abn_test",
+    "version": "1.0.0",
+    "description": "Take Home Test of Web developer - Data Domain of ABN",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "server": "node api/server",
+        "migrate": "node api/migration"
+    },
+    "author": "DavTech",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.24.0",
+        "colors": "^1.4.0",
+        "concurrently": "^6.4.0",
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "morgan": "^1.10.0"
+    }
 }
