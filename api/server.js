@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 
   app.get('/', (req, res) => {
-    res.json('Welcome to the backend in Development mode');
+    res.json('Welcome to the Development API');
   });
 }
 
