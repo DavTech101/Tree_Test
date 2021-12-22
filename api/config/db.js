@@ -11,26 +11,7 @@ const connectDB = () => {
         }
     );
 
-    const query = `
-            MATCH (n)
-            RETURN (n)`;
-
-    const params = { limit: 10 };
-
-    const session = driver.session({ database: 'neo4j' });
-
-    session
-        .run(query, params)
-        .then((result) => {
-            result.records.forEach((record) => {
-                console.log(record);
-            });
-            session.close();
-            driver.close();
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+    return driver;
 };
 
-connectDB();
+export default connectDB;

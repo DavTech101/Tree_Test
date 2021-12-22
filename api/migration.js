@@ -1,35 +1,145 @@
+import axios from 'axios';
 import colors from 'colors';
 import dotenv from 'dotenv';
-import axios from 'axios';
+import nodes from './data/nodes.js';
+import connectDB from './config/db.js';
+import createInstance, { createModel } from './config/model.js';
 
 dotenv.config();
 
-const migrateData = async() => {
-    const fileName = 'migrate-data.json';
-    const gistID = '684945f97cd6ce406c3a01b7c7cdeb01';
+const makeModel = async() => {
+    const instance = createInstance();
+    createModel(instance);
+};
 
-    const url = 'https://api.github.com/gists/' + gistID;
+/*
+    Clean up the database
+*/
+const destroyData = async() => {
+    const driver = connectDB();
+    const session = driver.session({ database: 'neo4j' });
+
+    const query = `
+        MATCH (n)
+        DETACH DELETE (n)
+        `;
 
     try {
-        const results = await axios.get(url);
-        const contents = results.data.files[fileName].content;
+        await session.run(query);
+        console.log('All Data destroyed!'.green.inverse);
 
-        console.log(contents);
-        console.log('All tasks handled!'.green.inverse);
-
-        process.exit();
+        session.close();
+        driver.close();
     } catch (error) {
         console.error(`${error}`.red.inverse);
-        process.exit(1);
     }
 };
 
-const destroyData = async() => {
-    await console.log('deleting alll'.red.inverse);
+/*
+    Gets data with usage of gist link or from data folder
+*/
+const getData = async() => {
+    if (process.env.GIST_ID) {
+        const gistID = process.env.GIST_ID;
+        const fileName = process.env.GIST_FILENAME;
+
+        const url = 'https://api.github.com/gists/' + gistID;
+
+        try {
+            const results = await axios.get(url);
+            const data = results.data.files[fileName].content;
+
+            console.log('Data retrieved from Gist!'.green.inverse);
+            return JSON.parse(data);
+        } catch (error) {
+            console.error(`${error}`.red.inverse);
+            process.exit(1);
+        }
+    } else {
+        return nodes;
+    }
 };
 
-if (process.argv == '-d') {
+/*
+     Adds Data to Database when array of data is given
+*/
+const migrateDataToDB = async() => {
+    const driver = connectDB();
+    const result = await getData();
+
+    if (result['data']) {
+        const data = result['data'];
+
+        data.map(async(point) => {
+            try {
+                const session = driver.session({ database: 'neo4j' }); // Open new session every
+                const query = `
+                    CREATE (n:Node {name: '${point.name}', description: '${point.description}', parent: '${point.parent}' })
+                `;
+
+                await session.run(query);
+
+                await session.close();
+                await driver.close();
+            } catch (error) {
+                console.error(`${error}`.red.inverse);
+                process.exit(1);
+            }
+        });
+
+        console.log('All Data Added successfully!'.green.inverse);
+    } else {
+        console.log('No Data to be added'.orange.inverse);
+    }
+};
+
+/*
+     Create relations for Nodes 
+*/
+const createRelations = async() => {
+    const driver = connectDB();
+    const result = await getData();
+
+    if (result['data']) {
+        const childs = result['data'].filter((node) => node.parent.length > 0);
+
+        childs.map(async(point) => {
+            try {
+                const session = driver.session({ database: 'neo4j' });
+
+                const query = `
+                    MATCH
+                      (a:Node),
+                      (b:Node)
+                    WHERE a.name = '${point.name}' AND b.name = '${point.parent}'
+                    CREATE (a)-[r:CHILD_OF]->(b)
+                    RETURN type(r)
+                `;
+
+                await session.run(query);
+
+                await session.close();
+            } catch (error) {
+                console.error(`${error}`.red.inverse);
+                process.exit(1);
+            }
+        });
+
+        console.log('All Data Related succesfully!'.green.inverse);
+        await driver.close();
+    } else {
+        console.log('No Data to be Related!'.orange.inverse);
+        await driver.close();
+    }
+};
+
+const setupData = async() => {
+    await migrateDataToDB();
+    await createRelations();
+};
+
+if (process.argv[2] === '-d') {
     destroyData();
 } else {
-    migrateData();
+    setupData();
 }
