@@ -1,18 +1,35 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <div class="container">
+    <img alt="Vue logo" src="./assets/abn-logo.png" />
+    <NodesTree :nodes="treeNodes" />
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+<script>
+import axios from 'axios';
+import NodesTree from './components/NodesTree.vue';
 
-export default defineComponent({
+export default {
   name: 'App',
   components: {
-    HelloWorld,
+    NodesTree,
   },
-});
+  data() {
+    return {
+      nodes: [],
+    };
+  },
+  methods: {
+    async fetchNodes() {
+      const data = await axios.get('http://localhost:4000/api/data');
+
+      return data['data'];
+    },
+  },
+  async created() {
+    this.nodes = await this.fetchNodes();
+  },
+};
 </script>
 
 <style>
@@ -22,6 +39,18 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+img {
+  width: 150px;
+  height: 100px;
 }
 </style>

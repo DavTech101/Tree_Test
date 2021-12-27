@@ -3,14 +3,8 @@ import colors from 'colors';
 import dotenv from 'dotenv';
 import nodes from './data/nodes.js';
 import connectDB from './config/db.js';
-import createInstance, { createModel } from './config/model.js';
 
 dotenv.config();
-
-const makeModel = async() => {
-    const instance = createInstance();
-    createModel(instance);
-};
 
 /*
     Clean up the database
@@ -63,51 +57,42 @@ const getData = async() => {
 /*
      Adds Data to Database when array of data is given
 */
-const migrateDataToDB = async() => {
+const migrateDataToDB = async(data) => {
     const driver = connectDB();
-    const result = await getData();
 
-    if (result['data']) {
-        const data = result['data'];
-
-        data.map(async(point) => {
-            try {
-                const session = driver.session({ database: 'neo4j' }); // Open new session every
-                const query = `
+    data.map(async(point) => {
+        try {
+            const session = driver.session({ database: 'neo4j' }); // Open new session every
+            const query = `
                     CREATE (n:Node {name: '${point.name}', description: '${point.description}', parent: '${point.parent}' })
                 `;
 
-                await session.run(query);
+            await session.run(query);
 
-                await session.close();
-                await driver.close();
-            } catch (error) {
-                console.error(`${error}`.red.inverse);
-                process.exit(1);
-            }
-        });
+            await session.close();
+            await driver.close();
+        } catch (error) {
+            console.error(`${error}`.red.inverse);
+            process.exit(1);
+        }
+    });
 
-        console.log('All Data Added successfully!'.green.inverse);
-    } else {
-        console.log('No Data to be added'.orange.inverse);
-    }
+    console.log('All Data Added successfully!'.green.inverse);
 };
 
 /*
      Create relations for Nodes 
 */
-const createRelations = async() => {
+const createRelations = async(result) => {
     const driver = connectDB();
-    const result = await getData();
 
-    if (result['data']) {
-        const childs = result['data'].filter((node) => node.parent.length > 0);
+    const childs = result.filter((node) => node.parent.length > 0);
 
-        childs.map(async(point) => {
-            try {
-                const session = driver.session({ database: 'neo4j' });
+    childs.map(async(point) => {
+        try {
+            const session = driver.session({ database: 'neo4j' });
 
-                const query = `
+            const query = `
                     MATCH
                       (a:Node),
                       (b:Node)
@@ -116,26 +101,38 @@ const createRelations = async() => {
                     RETURN type(r)
                 `;
 
-                await session.run(query);
+            await session.run(query);
 
-                await session.close();
-            } catch (error) {
-                console.error(`${error}`.red.inverse);
-                process.exit(1);
-            }
-        });
+            await session.close();
+        } catch (error) {
+            console.error(`${error}`.red.inverse);
+            process.exit(1);
+        }
+    });
 
-        console.log('All Data Related succesfully!'.green.inverse);
-        await driver.close();
-    } else {
-        console.log('No Data to be Related!'.orange.inverse);
-        await driver.close();
-    }
+    await driver.close();
+    console.log('All Data Related succesfully!'.green.inverse);
 };
 
+function giveNeo4JTimeToProcess() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve('Process Time Passed');
+        }, 2000);
+    });
+}
+
 const setupData = async() => {
-    await migrateDataToDB();
-    await createRelations();
+    const result = await getData();
+    const data = result['data'];
+
+    if (data) {
+        await migrateDataToDB(data);
+        await giveNeo4JTimeToProcess();
+        await createRelations(data);
+    } else {
+        console.log('No Data has been retrieved'.orange.inverse);
+    }
 };
 
 if (process.argv[2] === '-d') {

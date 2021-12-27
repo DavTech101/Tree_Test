@@ -7,7 +7,7 @@ import dataRoutes from './routes/dataRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 const app = express();
 app.use(cors(), express.json(), express.urlencoded({ extended: true }));
@@ -22,6 +22,10 @@ if (process.env.NODE_ENV === 'development') {
 
 app.get('/', (req, res) => {
     res.json('Hola mi gente');
+});
+
+app.get('/api', (req, res) => {
+    res.json('Hola api gente');
 });
 
 app.use('/api/data', dataRoutes);

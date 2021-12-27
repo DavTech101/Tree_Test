@@ -1,4 +1,5 @@
 import connectDB from '../config/db.js';
+import createTree from '../config/createTree.js';
 
 // @desc    GET All Nodes data
 // @route   GET /api/data
@@ -22,7 +23,8 @@ export const getData = async(req, res) => {
             nodes.push(records[i]._fields[0].properties);
         }
 
-        res.json(nodes);
+        const tree = createTree(nodes);
+        res.json(tree);
     } else {
         res.status(404);
         throw new Error('Nodes data not found');

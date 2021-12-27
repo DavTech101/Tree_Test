@@ -34,6 +34,11 @@ const nodes = {
             description: 'This is a description of B-3',
             parent: 'B',
         },
+        {
+            name: 'B-4',
+            description: 'This is a description of B-4',
+            parent: 'A',
+        },
     ],
 };
 
