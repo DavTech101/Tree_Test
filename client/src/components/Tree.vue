@@ -1,26 +1,8 @@
 <template>
-  <v-app>
-    <v-container>
-      <v-row>
-        <v-col cols="4" class="d-flex justify-center align-center">
-          <div class="pa-2">
-            <h3 class="pb-2">Countries in 2018 with the highest GDP</h3>
-            <p>
-              Gross domestic product by country allows you to compare the
-              economies of the nations. It measures everything produced by
-              everyone in the country whether they are citizens or foreigners.
-              The data has been taken from
-              <a
-                href="https://www.thebalance.com/gdp-by-country-3-ways-to-compare-3306012"
-                >The Balance</a
-              >.
-            </p>
-          </div>
-        </v-col>
-        <v-col id="arc" />
-      </v-row>
-    </v-container>
-  </v-app>
+  <div>
+    <div @click="onCLick()">{{ nodes }}</div>
+  </div>
+  <span id="arc" />
 </template>
 
 <script>
@@ -32,50 +14,100 @@ export default {
     nodes: Array,
   },
   methods: {
+    createTree(treenodes) {
+      // set the dimensions and margins of the diagram
+      const margin = { top: 20, right: 90, bottom: 30, left: 90 },
+        width = 1000 - margin.left - margin.right,
+        height = 1000 - margin.top - margin.bottom;
+
+      // declares a tree layout and assigns the size
+      const treemap = d3.tree().size([height, width]);
+
+      //  assigns the data to a hierarchy using parent-child relationships
+      let nodes = d3.hierarchy(treenodes, (d) => d.children);
+
+      // maps the node data to the tree layout
+      nodes = treemap(nodes);
+
+      // append the svg object to the body of the page
+      // appends a 'group' element to 'svg'
+      // moves the 'group' element to the top left margin
+      const svg = d3
+          .select('#arc')
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom),
+        g = svg
+          .append('g')
+          .attr(
+            'transform',
+            'translate(' + margin.left + ',' + margin.top + ')'
+          );
+
+      // adds the links between the nodes
+      const link = g
+        .selectAll('.link')
+        .data(nodes.descendants().slice(1))
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .style('stroke', (d) => d.data.level)
+        .attr('d', (d) => {
+          return (
+            'M' +
+            d.y +
+            ',' +
+            d.x +
+            'C' +
+            (d.y + d.parent.y) / 2 +
+            ',' +
+            d.x +
+            ' ' +
+            (d.y + d.parent.y) / 2 +
+            ',' +
+            d.parent.x +
+            ' ' +
+            d.parent.y +
+            ',' +
+            d.parent.x
+          );
+        });
+
+      // adds each node as a group
+      const node = g
+        .selectAll('.node')
+        .data(nodes.descendants())
+        .enter()
+        .append('g')
+        .attr(
+          'class',
+          (d) => 'node' + (d.children ? ' node--internal' : ' node--leaf')
+        )
+        .attr('transform', (d) => 'translate(' + d.y + ',' + d.x + ')');
+
+      // adds the circle to the node
+      node
+        .append('circle')
+        .attr('r', (d) => d.data.value)
+        .style('stroke', (d) => d.data.type)
+        .style('fill', (d) => d.data.level);
+
+      // adds the text to the node
+      node
+        .append('text')
+        .attr('dy', '.35em')
+        .attr('x', (d) =>
+          d.children ? (d.data.value + 5) * -1 : d.data.value + 5
+        )
+        .attr('y', (d) =>
+          d.children && d.depth !== 0 ? -(d.data.value + 5) : d
+        )
+        .style('text-anchor', (d) => (d.children ? 'end' : 'start'))
+        .text((d) => d.data.name);
+    },
+
     onCLick() {
       console.log('Clicked');
-    },
-    createTree(treenodes) {
-      const dx = 4000;
-      const dy = 4000;
-      const width = 11520;
-      const root = d3.hierarchy(treenodes);
-      const tree = d3.tree().nodeSize([dx, dy]);
-      const diagonal = d3
-        .linkHorizontal()
-        .x((d) => d.y)
-        .y((d) => d.x);
-      const margin = { top: 10, right: 120, bottom: 10, left: 40 };
-
-      root.y0 = 0;
-      root.x0 = dy / 2;
-
-      root.descendants().forEach((d, i) => {
-        d.name = i;
-        d._children = d.children;
-        if (d.depth && d.data.name.length !== 7) d.children = null;
-      });
-
-      const svg = d3
-        .select('#Tree')
-        .append('svg')
-        .attr('viewBox', [-margin.left, -margin.top, width, dx])
-        .style('font', '10px sans-serif')
-        .style('user-select', 'none');
-
-      const gLink = svg
-        .append('g')
-        .attr('fill', 'none')
-        .attr('stroke', '#555')
-        .attr('stroke-opacity', 0.4)
-        .attr('stroke-width', 1.5);
-
-      const gNode = svg
-        .append('g')
-        .attr('cursor', 'pointer')
-        .attr('pointer-events', 'all');
-
-      return svg.node();
     },
   },
   mounted() {
@@ -85,7 +117,7 @@ export default {
 </script>
 
 <style scoped>
-img {
+div {
   margin: 2px;
   border: none;
   color: white;
@@ -96,5 +128,21 @@ img {
   display: inline-block;
   text-decoration: none;
   background-color: #4caf50; /* Green */
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 16px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
 }
 </style>
