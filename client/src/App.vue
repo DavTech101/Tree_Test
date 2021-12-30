@@ -1,22 +1,23 @@
 <template>
   <div class="container">
     <img alt="Vue logo" src="./assets/abn-logo.png" />
-    <NodesTree :nodes="treeNodes" />
+    <Tree v-if="is_data_fetched" :nodes="nodes" />
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import NodesTree from './components/NodesTree.vue';
+import Tree from './components/Tree.vue';
 
 export default {
   name: 'App',
   components: {
-    NodesTree,
+    Tree,
   },
   data() {
     return {
-      nodes: [],
+      nodes: null,
+      is_data_fetched: false,
     };
   },
   methods: {
@@ -28,6 +29,7 @@ export default {
   },
   async created() {
     this.nodes = await this.fetchNodes();
+    this.is_data_fetched = true;
   },
 };
 </script>

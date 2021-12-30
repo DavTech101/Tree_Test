@@ -23,7 +23,7 @@ export const getData = async(req, res) => {
             nodes.push(records[i]._fields[0].properties);
         }
 
-        const tree = createTree(nodes);
+        const tree = nodes; //createTree(nodes);
         res.json(tree);
     } else {
         res.status(404);
