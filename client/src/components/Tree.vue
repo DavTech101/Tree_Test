@@ -241,7 +241,7 @@ li:nth-child(n + 2) {
   justify-content: center;
   align-items: center;
   background: #ff5959;
-  color: #0000ffff;
+  color: inherit;
   border: none;
   padding: 1px;
   font: inherit;
