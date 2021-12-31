@@ -33,10 +33,10 @@ app.get('/api', (req, res) => {
 app.use('/api/data', dataRoutes);
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(`${__dirname}/client/dist`));
+    app.use(express.static(`client/dist`));
 
     app.get('*', (req, res) => {
-        res.sendFile(`${__dirname}/client/dist/index.html`);
+        res.sendFile(`client/dist/index.html`);
     });
 }
 
