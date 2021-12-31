@@ -1,4 +1,3 @@
-import path from 'path';
 import cors from 'cors';
 import colors from 'colors';
 import dotenv from 'dotenv';
@@ -11,7 +10,6 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 
 const app = express();
-const __dirname = path.resolve();
 app.use(cors(), express.json(), express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
