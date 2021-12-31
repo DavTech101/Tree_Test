@@ -10,8 +10,9 @@
         "migrate": "node api/migration",
         "server": "node api/server.js",
         "start": "node api/server.js",
-        "init-client": "cd client && npm install && npm run build",
-        "heroku-postbuild": "npm run init-client"
+        "build": "cd client && npm run build",
+        "install-client": "cd client && npm install",
+        "heroku-postbuild": "npm run init-client && npm run build"
     },
     "main": "server.js",
     "dependencies": {
