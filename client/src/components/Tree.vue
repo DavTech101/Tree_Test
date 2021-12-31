@@ -1,8 +1,19 @@
 <template>
-  <div>
-    <div @click="onCLick()">{{ nodes }}</div>
+  <div class="container">
+    <div class="control-tile">
+      <h3><strong>Controls:</strong></h3>
+      <ul>
+        <li>Click to Show description and name</li>
+        <li>Double Click to reveal or hide Children</li>
+        <li>Green circles depict nodes containing children</li>
+      </ul>
+    </div>
+    <div class="nodetile">
+      <h2>{{ nodeName }}</h2>
+      <p>{{ nodeDescription }}</p>
+    </div>
   </div>
-  <span id="arc" />
+  <span id="tree" />
 </template>
 
 <script>
@@ -15,134 +26,206 @@ export default {
   },
   methods: {
     createTree(treenodes) {
-      // set the dimensions and margins of the diagram
-      const margin = { top: 20, right: 90, bottom: 30, left: 90 },
-        width = 1000 - margin.left - margin.right,
-        height = 1000 - margin.top - margin.bottom;
+      const dx = 100;
+      const width = 1100;
+      const dy = width / 6;
+      const root = d3.hierarchy(treenodes);
+      const tree = d3.tree().nodeSize([dx, dy]);
 
-      // declares a tree layout and assigns the size
-      const treemap = d3.tree().size([height, width]);
+      const setProps = (name, decription) => {
+        this.nodeName = name;
+        this.nodeDescription = decription;
+      };
 
-      //  assigns the data to a hierarchy using parent-child relationships
-      let nodes = d3.hierarchy(treenodes, (d) => d.children);
+      const diagonal = d3
+        .linkHorizontal()
+        .x((d) => d.y)
+        .y((d) => d.x);
+      const margin = { top: 50, right: 120, bottom: 10, left: 200 };
 
-      // maps the node data to the tree layout
-      nodes = treemap(nodes);
+      root.y0 = 0;
+      root.x0 = dy / 2;
+      root.descendants().forEach((d, i) => {
+        d.id = i;
+        d._children = d.children;
+        if (d.depth && d.data.name.length !== 7) d.children = null;
+      });
 
-      // append the svg object to the body of the page
-      // appends a 'group' element to 'svg'
-      // moves the 'group' element to the top left margin
       const svg = d3
-          .select('#arc')
-          .append('svg')
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom),
-        g = svg
-          .append('g')
-          .attr(
-            'transform',
-            'translate(' + margin.left + ',' + margin.top + ')'
-          );
+        .select('#tree')
+        .append('svg')
+        .attr('viewBox', [-margin.left, -margin.top, width, dx])
+        .style('font', '12px sans-serif')
+        .style('user-select', 'none');
 
-      // adds the links between the nodes
-      const link = g
-        .selectAll('.link')
-        .data(nodes.descendants().slice(1))
-        .enter()
-        .append('path')
-        .attr('class', 'link')
-        .style('stroke', (d) => d.data.level)
-        .attr('d', (d) => {
-          return (
-            'M' +
-            d.y +
-            ',' +
-            d.x +
-            'C' +
-            (d.y + d.parent.y) / 2 +
-            ',' +
-            d.x +
-            ' ' +
-            (d.y + d.parent.y) / 2 +
-            ',' +
-            d.parent.x +
-            ' ' +
-            d.parent.y +
-            ',' +
-            d.parent.x
-          );
+      const gLink = svg
+        .append('g')
+        .attr('fill', 'none')
+        .attr('stroke', '#555')
+        .attr('stroke-opacity', 0.8)
+        .attr('stroke-width', 2.5);
+
+      const gNode = svg
+        .append('g')
+        .attr('cursor', 'pointer')
+        .attr('pointer-events', 'all');
+
+      function update(source) {
+        const duration = 400;
+        const nodes = root.descendants().reverse();
+        const links = root.links();
+
+        // Compute the new tree layout.
+        tree(root);
+
+        let left = root;
+        let right = root;
+        root.eachBefore((node) => {
+          if (node.x < left.x) left = node;
+          if (node.x > right.x) right = node;
         });
 
-      // adds each node as a group
-      const node = g
-        .selectAll('.node')
-        .data(nodes.descendants())
-        .enter()
-        .append('g')
-        .attr(
-          'class',
-          (d) => 'node' + (d.children ? ' node--internal' : ' node--leaf')
-        )
-        .attr('transform', (d) => 'translate(' + d.y + ',' + d.x + ')');
+        const height = right.x - left.x + margin.top + margin.bottom;
 
-      // adds the circle to the node
-      node
-        .append('circle')
-        .attr('r', (d) => d.data.value)
-        .style('stroke', (d) => d.data.type)
-        .style('fill', (d) => d.data.level);
+        const transition = svg
+          .transition()
+          .duration(duration)
+          .attr('viewBox', [-margin.left, left.x - margin.top, width, height])
+          .tween(
+            'resize',
+            window.ResizeObserver ? null : () => () => svg.dispatch('toggle')
+          );
 
-      // adds the text to the node
-      node
-        .append('text')
-        .attr('dy', '.35em')
-        .attr('x', (d) =>
-          d.children ? (d.data.value + 5) * -1 : d.data.value + 5
-        )
-        .attr('y', (d) =>
-          d.children && d.depth !== 0 ? -(d.data.value + 5) : d
-        )
-        .style('text-anchor', (d) => (d.children ? 'end' : 'start'))
-        .text((d) => d.data.name);
-    },
+        // Update the nodes…
+        const node = gNode.selectAll('g').data(nodes, (d) => d.id);
 
-    onCLick() {
-      console.log('Clicked');
+        // Enter any new nodes at the parent's previous position.
+        const nodeEnter = node
+          .enter()
+          .append('g')
+          .attr('transform', (d) => `translate(${source.y0},${source.x0})`)
+          .attr('fill-opacity', 10)
+          .attr('stroke-opacity', 10)
+          .on('click', (event, d) => {
+            setProps(d.data.name, d.data.description);
+          })
+          .on('dblclick', (event, d) => {
+            d.children = d.children ? null : d._children;
+            update(d);
+          });
+
+        nodeEnter
+          .append('circle')
+          .attr('r', 4.5)
+          .attr('fill', (d) => (d._children ? '#146356' : '#999'))
+          .attr('stroke-width', 10);
+
+        nodeEnter
+          .append('text')
+          .attr('dy', '0.31em')
+          .attr('x', (d) => (d._children ? -6 : 6))
+          .attr('text-anchor', (d) => (d._children ? 'end' : 'start'))
+          .text((d) => d.data.name)
+          .clone(true)
+          .lower()
+          .attr('stroke-linejoin', 'round')
+          .attr('stroke-width', 3)
+          .attr('stroke', 'white');
+
+        // Transition nodes to their new position.
+        const nodeUpdate = node
+          .merge(nodeEnter)
+          .transition(transition)
+          .attr('transform', (d) => `translate(${d.y},${d.x})`)
+          .attr('fill-opacity', 1)
+          .attr('stroke-opacity', 1);
+
+        // Transition exiting nodes to the parent's new position.
+        const nodeExit = node
+          .exit()
+          .transition(transition)
+          .remove()
+          .attr('transform', (d) => `translate(${source.y},${source.x})`)
+          .attr('fill-opacity', 0)
+          .attr('stroke-opacity', 0);
+
+        // Update the links…
+        const link = gLink.selectAll('path').data(links, (d) => d.target.id);
+
+        // Enter any new links at the parent's previous position.
+        const linkEnter = link
+          .enter()
+          .append('path')
+          .attr('d', (d) => {
+            const o = { x: source.x0, y: source.y0 };
+            return diagonal({ source: o, target: o });
+          });
+
+        // Transition links to their new position.
+        link.merge(linkEnter).transition(transition).attr('d', diagonal);
+
+        // Transition exiting nodes to the parent's new position.
+        link
+          .exit()
+          .transition(transition)
+          .remove()
+          .attr('d', (d) => {
+            const o = { x: source.x, y: source.y };
+            return diagonal({ source: o, target: o });
+          });
+
+        // Stash the old positions for transition.
+        root.eachBefore((d) => {
+          d.x0 = d.x;
+          d.y0 = d.y;
+        });
+      }
+
+      update(root);
+
+      return svg.node();
     },
   },
   mounted() {
     this.createTree(this.nodes[0]);
   },
+  data() {
+    return {
+      nodeName: this.nodeName,
+      nodeDescription: this.nodeDescription,
+    };
+  },
 };
 </script>
 
 <style scoped>
-div {
-  margin: 2px;
+.container {
+  display: flex;
+  margin: 0 auto;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.control-tile {
+  text-align: left;
+}
+
+ul {
+  padding: 0;
+  margin-right: 5rem;
+}
+
+li:nth-child(n + 2) {
+  padding-top: 1em;
+}
+
+.nodetile {
+  width: 200px;
+  height: 130px;
   border: none;
   color: white;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 15px 32px;
+  padding: 10px 15px;
   text-align: center;
-  display: inline-block;
-  text-decoration: none;
-  background-color: #4caf50; /* Green */
-}
-
-.node circle {
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 3px;
-}
-
-.node text {
-  font: 16px sans-serif;
-}
-
-.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 2px;
+  background-color: #146356;
 }
 </style>
