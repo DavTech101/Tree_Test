@@ -3,9 +3,9 @@
     <div class="control-tile">
       <h3><strong>Controls:</strong></h3>
       <ul>
-        <li>Click to Show description and name</li>
-        <li>Double Click to reveal or hide Children</li>
-        <li>Green circles depict nodes containing children</li>
+        <li>Click on node to show the description and name</li>
+        <li>Double click on node to reveal or hide the children nodes</li>
+        <li>Green circles depict nodes containing children nodes</li>
       </ul>
     </div>
     <div class="nodetile">
@@ -75,7 +75,6 @@ export default {
         const nodes = root.descendants().reverse();
         const links = root.links();
 
-        // Compute the new tree layout.
         tree(root);
 
         let left = root;
