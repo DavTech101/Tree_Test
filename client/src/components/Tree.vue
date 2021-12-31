@@ -32,11 +32,6 @@ export default {
       const root = d3.hierarchy(treenodes);
       const tree = d3.tree().nodeSize([dx, dy]);
 
-      const setProps = (name, decription) => {
-        this.nodeName = name;
-        this.nodeDescription = decription;
-      };
-
       const diagonal = d3
         .linkHorizontal()
         .x((d) => d.y)
@@ -50,6 +45,11 @@ export default {
         d._children = d.children;
         if (d.depth && d.data.name.length !== 7) d.children = null;
       });
+
+      const setProps = (name, decription) => {
+        this.nodeName = name;
+        this.nodeDescription = decription;
+      };
 
       const svg = d3
         .select('#tree')
@@ -70,7 +70,7 @@ export default {
         .attr('cursor', 'pointer')
         .attr('pointer-events', 'all');
 
-      function update(source) {
+      const update = (source) => {
         const duration = 400;
         const nodes = root.descendants().reverse();
         const links = root.links();
@@ -179,7 +179,7 @@ export default {
           d.x0 = d.x;
           d.y0 = d.y;
         });
-      }
+      };
 
       update(root);
 
