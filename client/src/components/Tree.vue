@@ -38,7 +38,7 @@ export default {
     },
     createTree(treenodes) {
       const dx = 100;
-      const width = 900;
+      const width = 1000;
       const dy = width / 6;
       const root = d3.hierarchy(treenodes);
 
