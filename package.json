@@ -1,34 +1,35 @@
 {
-  "name": "abn_test",
-  "version": "1.0.0",
-  "description": "Take Home Test of Web developer - Data Domain of ABN",
-  "author": "DavTech",
-  "scripts": {
-    "client": "npm start --prefix client",
-    "deletedata": "node api/migration -d",
-    "dev": "concurrently \"npm run start\" \"npm run client\"",
-    "migrate": "node api/migration",
-    "server": "node api/server",
-    "start": "node api/server"
-  },
-  "main": "server.js",
-  "dependencies": {
-    "axios": "^0.24.0",
-    "colors": "^1.4.0",
-    "concurrently": "^6.4.0",
-    "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "morgan": "^1.10.0",
-    "neo4j-driver": "^4.4.1",
-    "neode": "^0.4.7"
-  },
-  "devDependencies": {
-    "sass": "~1.32.0",
-    "sass-loader": "^10.0.0",
-    "vue-cli-plugin-vuetify": "~2.4.5",
-    "vuetify-loader": "^1.7.0"
-  },
-  "license": "MIT",
-  "type": "module"
+    "name": "abn_test",
+    "version": "1.0.0",
+    "description": "Take Home Test of Web developer - Data Domain of ABN",
+    "author": "DavTech",
+    "scripts": {
+        "client": "npm start --prefix client",
+        "deletedata": "node api/migration -d",
+        "dev": "concurrently \"npm run start\" \"npm run client\"",
+        "migrate": "node api/migration",
+        "server": "node api/server",
+        "start": "node api/server",
+        "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+    },
+    "main": "server.js",
+    "dependencies": {
+        "axios": "^0.24.0",
+        "colors": "^1.4.0",
+        "concurrently": "^6.4.0",
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "morgan": "^1.10.0",
+        "neo4j-driver": "^4.4.1",
+        "neode": "^0.4.7"
+    },
+    "devDependencies": {
+        "sass": "~1.32.0",
+        "sass-loader": "^10.0.0",
+        "vue-cli-plugin-vuetify": "~2.4.5",
+        "vuetify-loader": "^1.7.0"
+    },
+    "license": "MIT",
+    "type": "module"
 }
