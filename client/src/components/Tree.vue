@@ -38,7 +38,7 @@ export default {
     },
     createTree(treenodes) {
       const dx = 100;
-      const width = 800;
+      const width = 900;
       const dy = width / 6;
       const root = d3.hierarchy(treenodes);
 
@@ -241,7 +241,7 @@ li:nth-child(n + 2) {
   justify-content: center;
   align-items: center;
   background: #ff5959;
-  color: inherit;
+  color: #0000ffff;
   border: none;
   padding: 1px;
   font: inherit;
