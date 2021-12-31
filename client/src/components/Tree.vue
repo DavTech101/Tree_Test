@@ -12,6 +12,7 @@
       <h2>{{ nodeName }}</h2>
       <p>{{ nodeDescription }}</p>
     </div>
+    <button class="clear" @click="clearTile()">&#10005;</button>
   </div>
   <span id="tree" />
 </template>
@@ -24,18 +25,23 @@ export default {
   props: {
     nodes: Array,
   },
+  data() {
+    return {
+      nodeName: this.nodeName,
+      nodeDescription: this.nodeDescription,
+    };
+  },
   methods: {
+    clearTile() {
+      this.nodeName = '';
+      this.nodeDescription = '';
+    },
     createTree(treenodes) {
       const dx = 100;
-      const width = 1100;
+      const width = 500;
       const dy = width / 6;
       const root = d3.hierarchy(treenodes);
-      const tree = d3.tree().nodeSize([dx, dy]);
 
-      const diagonal = d3
-        .linkHorizontal()
-        .x((d) => d.y)
-        .y((d) => d.x);
       const margin = { top: 50, right: 120, bottom: 10, left: 200 };
 
       root.y0 = 0;
@@ -45,11 +51,6 @@ export default {
         d._children = d.children;
         if (d.depth && d.data.name.length !== 7) d.children = null;
       });
-
-      const setProps = (name, decription) => {
-        this.nodeName = name;
-        this.nodeDescription = decription;
-      };
 
       const svg = d3
         .select('#tree')
@@ -69,6 +70,18 @@ export default {
         .append('g')
         .attr('cursor', 'pointer')
         .attr('pointer-events', 'all');
+
+      const tree = d3.tree().nodeSize([dx, dy]);
+
+      const diagonal = d3
+        .linkHorizontal()
+        .x((d) => d.y)
+        .y((d) => d.x);
+
+      const setProps = (name, decription) => {
+        this.nodeName = name;
+        this.nodeDescription = decription;
+      };
 
       const update = (source) => {
         const duration = 400;
@@ -188,12 +201,6 @@ export default {
   mounted() {
     this.createTree(this.nodes[0]);
   },
-  data() {
-    return {
-      nodeName: this.nodeName,
-      nodeDescription: this.nodeDescription,
-    };
-  },
 };
 </script>
 
@@ -219,6 +226,7 @@ li:nth-child(n + 2) {
 }
 
 .nodetile {
+  margin-right: 10px;
   width: 200px;
   height: 130px;
   border: none;
@@ -226,5 +234,25 @@ li:nth-child(n + 2) {
   padding: 10px 15px;
   text-align: center;
   background-color: #146356;
+}
+
+.clear {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ff5959;
+  color: inherit;
+  border: none;
+  padding: 1px;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  border-radius: 50%;
+  width: 2rem;
+  aspect-ratio: 1;
+}
+
+.clear:hover {
+  background: orangered;
 }
 </style>
