@@ -36,6 +36,11 @@ export default {
       this.nodeName = '';
       this.nodeDescription = '';
     },
+    setupTree(roots) {
+      for (let i = 0; i < roots.length; i++) {
+        this.createTree(roots[i]);
+      }
+    },
     createTree(treenodes) {
       const dx = 100;
       const width = 1000;
@@ -199,7 +204,7 @@ export default {
     },
   },
   mounted() {
-    this.createTree(this.nodes[0]);
+    this.setupTree(this.nodes);
   },
 };
 </script>
