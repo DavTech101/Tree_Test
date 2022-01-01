@@ -8,8 +8,10 @@
         "deletedata": "node api/migration -d",
         "dev": "concurrently \"npm run start\" \"npm run client\"",
         "migrate": "node api/migration",
-        "server": "node api/server",
-        "start": "node api/server"
+        "server": "node api/server.js",
+        "start": "node api/server.js",
+        "init-client": "cd client && npm install && npm run build",
+        "heroku-postbuild": "npm run init-client"
     },
     "main": "server.js",
     "dependencies": {

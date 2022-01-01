@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     async fetchNodes() {
-      const data = await axios.get('http://localhost:4000/api/data');
+      const data = await axios.get('/api/data');
 
       return data['data'];
     },

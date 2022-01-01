@@ -1,3 +1,4 @@
+import path from 'path';
 import cors from 'cors';
 import colors from 'colors';
 import dotenv from 'dotenv';
@@ -10,6 +11,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 
 const app = express();
+const __dirname = path.resolve();
 app.use(cors(), express.json(), express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
@@ -29,6 +31,14 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/data', dataRoutes);
+
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(`${__dirname}/client/dist`));
+
+    app.get('*', (req, res) => {
+        res.sendFile(`${__dirname}/client/dist/public/index.html`);
+    });
+}
 
 app.use(notFound);
 app.use(errorHandler);
